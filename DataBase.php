@@ -62,6 +62,7 @@ class DataBase
         $phonenumber = $this->prepareData($phonenumber);
         $email = $this->prepareData($email);
         $password = password_hash($password, PASSWORD_DEFAULT);
+
         $this->sql =
             "INSERT INTO " . $table . " (FirstName, LastName, DomID, Address, City, PhoneNumber, Email, Password) VALUES ('" . $firstname . "','" . $lastname . "','" . $domid . "','" . $address . "','" . $city . "','" . $phonenumber . "','" . $email . "','" . $password . "')";
         if (mysqli_query($this->connect, $this->sql)) {
@@ -155,6 +156,22 @@ class DataBase
              }else return false;
         }
 
+    function getTagId($table, $userid) //Retrieves all vehicle data related to the tags registered by the user
+    {
+        $userid = $this->prepareData($userid);
+
+        $this->sql = "SELECT tags.id, vehicles.vin, vehicles.make, vehicles.model, vehicles.color FROM " . $table . "JOIN tags ON tags.vehicle_id=vehicles.id JOIN users ON users.id=vehicles.user_id WHERE users.id ='" . $userid . "'";
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+        if (mysqli_num_rows($result) != 0) {
+            $dbuserid = $row['id'];
+            if ($dbuserid == $userid) {
+                $gettag = true;
+            } else $gettag = false;
+        } else $gettag = false;
+
+        return $gettag;
+    }
 }
 
 ?>
