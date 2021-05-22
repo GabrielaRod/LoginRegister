@@ -1,11 +1,20 @@
 <?php
 require "DataBase.php";
 $db = new DataBase();
-if (isset($_POST['VIN']) && isset($_POST['Make']) && isset($_POST['Model']) && isset($_POST['Year']) && isset($_POST['Color']) && isset($_POST['Type']) && isset($_POST['user_id'])) {
+$VIN = $_POST['VIN'];
+$Make = $_POST['Make'];
+$Model = $_POST['Model'];
+$Year = $_POST['Year'];
+$Color = $_POST['Color'];
+$Type = $_POST['Type'];
+$Tagid = $_POST['Tag'];
+$Email = $_POST['Email'];
+
+if (isset($VIN) && isset($Make) && isset($Model) && isset($Year) && isset($Color) && isset($Type) && isset($Tagid) && isset($Email)) {
     if ($db->dbConnect()) {
-        if ($db->assetRegistration("vehicles", $_POST['VIN'], $_POST['Make'], $_POST['Model'], $_POST['Year'], $_POST['Color'], $_POST['Type'], $_POST['user_id']) {
+        if ($db->assetRegistration("vehicles", $_POST['VIN'], $_POST['Make'], $_POST['Model'], $_POST['Year'], $_POST['Color'], $_POST['Type'], $_POST['Tag'], $_POST['Email'])) {
             echo "Registration Sucessful";
         } else echo "Registration Failed";
     } else echo "Error: Database connection";
-} else echo "All fields are required";
+} else echo "All fields are required!";
 ?>

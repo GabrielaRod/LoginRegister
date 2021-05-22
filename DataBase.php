@@ -82,8 +82,27 @@ class DataBase
         } else return false;
     }
 
+    function getUserId($email){
 
-    function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid) //TODO Select the user_id to link the vehicle to the login user 
+        $email = $this->prepareData($email);
+        $userid;
+
+        $this->sql = "Select * from users where Email = '" . $email . "'"; 
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+        if (mysqli_num_rows($result) != 0) {
+            $dbemail = $row['Email'];
+            $dbuser_id = $row['id'];
+            if ($dbemail == $email) {
+                $userid = $dbuser_id;
+            } else return false;
+        } else return false;
+
+        return $userid;
+    }
+
+
+    function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email) //TODO Select the user_id to link the vehicle to the login user 
     {
         $vin = $this->prepareData($vin);
         $make = $this->prepareData($make);
@@ -92,21 +111,49 @@ class DataBase
         $color = $this->prepareData($color);
         $type = $this->prepareData($type);
         $tagid = $this->prepareData($tagid);
+        $email = $this->prepareData($email);
+        $vehicleid;
 
-        $this->sql = "select user_id from users where Email = '" . $email . "'"; //INCOMPLETE CODE.
-        $email = mysqli_query($this->connect, $this->sql);
+
+        $email = $this->prepareData($email);
+        $userid;
+
+        $this->sql = "Select * from users where Email = '" . $email . "'"; 
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+        if (mysqli_num_rows($result) != 0) {
+            $dbemail = $row['Email'];
+            $dbuser_id = $row['id'];
+            if ($dbemail == $email) {
+                $userid = $dbuser_id;
+                echo $userid;
+            } else return false;
+        } else return false;
+
 
         $this->sql =
-            "INSERT INTO " . $table . " (VIN, Make, Model, Year, Color, Type) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $year . "','" . $color . "','" . $type . "')";
+            "INSERT INTO " . $table . " (VIN, Make, Model, Year, Color, Type, user_id) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $year . "','" . $color . "','" . $type . "','" . $userid . "')";
+
         if (mysqli_query($this->connect, $this->sql)) {
-
-            $this->sql = "select vehicle_id from vehicles where VIN = '" . $vin . "'"; //Retrieve new stored vehicle to store the Tag into the Tags table.
-            $vehicleid = mysqli_query($this->connect, $this->sql); 
-
-            tagRegistration($tagid,  $vehicleid);
             return true;
         } else return false;
-    }
+
+        
+        $this->sql = "Select * from vehicles where VIN = '" . $vin . "'"; //Retrieve new stored vehicle to store the Tag into the Tags table.
+                $result = mysqli_query($this->connect, $this->sql);
+                $row = mysqli_fetch_assoc($result);
+            if (mysqli_num_rows($result) != 0) {
+                $dbvin = $row['VIN'];
+                $dbvehicle_id = $row['id'];
+                if ($dbvin == $vin) {
+                    $vehicleid = $dbvehicle_id;
+                    echo $vehicleid;
+
+                    tagRegistration($tagid, $vehicleid);
+                    
+                } else return false;
+             }else return false;
+        }
 
 }
 
