@@ -1,11 +1,13 @@
 <?php
-require "DataBase.php";
+require "test.php";
 $db = new DataBase();
-if (isset($_POST['id'])) {
+$userid = $_GET['user_id'];
+
+if (isset($userid)) {
     if ($db->dbConnect()) {
-        if ($db->getTagId("vehicles", $_POST['id'])) {
-            echo "Tags found";
-        } else echo "Wrong user id";
+        if ($db->getVehicleId('vehicles', $_GET['user_id'])) {
+            echo "Fetched Data";
+        } else echo "Fetching Data Failed";
     } else echo "Error: Database connection";
-} else echo "All fields are required";
+} else echo "All fields are required!";
 ?>

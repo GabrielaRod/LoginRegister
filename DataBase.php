@@ -99,9 +99,34 @@ class DataBase
             } else return false;
         } else return false;
 
-        return $userid;
+        echo $userid;
+        $connect->close();
     }
 
+    function getVehicleId($userid){
+
+        $userid = $this->prepareData($userid);
+        $vehicleid = '';
+
+        $this->sql = "Select * from vehicles where user_id = '" . $userid . "'"; 
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+        if (mysqli_num_rows($result) != 0) {
+            $dbuser_id = $row['user_id'];
+            $dbvehicle_id = $row['id'];
+            if ($dbuser_id == $userid) {
+                $return_arr['tags'] = array();
+                while($row = $result->fetch_array()){
+                    array_psuh($return_arr['tags'], array (
+                        'id'=>$row['id']
+                    ));
+                }
+                echo json_decode($return_arr);
+            } else echo 'No user id associated with vehicles';
+        } else echo 'No results';
+
+        $connect->close();
+    }
 
     function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email) //TODO Select the user_id to link the vehicle to the login user 
     {
@@ -156,16 +181,31 @@ class DataBase
              }else return false;
         }
 
-    function getTagId($table, $userid) //Retrieves all vehicle data related to the tags registered by the user
+    function getTagId($table, $email) //Retrieves all vehicle data related to the tags registered by the user
     {
-        $userid = $this->prepareData($userid);
+        $email = $this->prepareData($email);
 
-        $this->sql = "SELECT tags.id, vehicles.vin, vehicles.make, vehicles.model, vehicles.color FROM " . $table . "JOIN tags ON tags.vehicle_id=vehicles.id JOIN users ON users.id=vehicles.user_id WHERE users.id ='" . $userid . "'";
+        $userid = getUserId($email);
+
+
+        //$this->sql = "SELECT tags.id, vehicles.vin, vehicles.make, vehicles.model, vehicles.color FROM " . $table . " JOIN tags ON tags.vehicle_id=vehicles.id JOIN users ON users.id=vehicles.user_id WHERE users.id ='" . $userid . "'";
+        
+        $this->sql = "SELECT tags.id FROM " . $table . " WHERE users.id ='" . $userid . "'";
+
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
         if (mysqli_num_rows($result) != 0) {
             $dbuserid = $row['id'];
             if ($dbuserid == $userid) {
+                while($row[] = mysqli_fetch_assoc($result)){
+                    $item = $row;
+                    $json = json_encode($item);
+                }else {
+                    echo "0 Results";
+                }
+
+                echo $json;
+                $connect->close();
                 $gettag = true;
             } else $gettag = false;
         } else $gettag = false;
