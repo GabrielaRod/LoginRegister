@@ -39,13 +39,19 @@ class DataBase
         $userid = $this->prepareData($userid);
 
         $this->sql = "select * from " . $table . " where user_id = '" . $userid . "'";
+        
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
+
         if (mysqli_num_rows($result) != 0) {
                 $dbuser_id = $row['user_id'];    
-                var_dump(mysqli_fetch_assoc($result));
+
             if ($dbuser_id == $userid) {
                 $return_arr['tags'] = array();
+                     array_push($return_arr['tags'], array(
+                            'Vehicle Id'=>$row['id'],
+                            'User id'=>$row['user_id']
+                        ));
                     while($row = mysqli_fetch_assoc($result)){
                         array_push($return_arr['tags'], array(
                             'Vehicle Id'=>$row['id'],
@@ -53,6 +59,7 @@ class DataBase
                         ));
                     }
                     echo json_encode($return_arr);
+                    return true;
                 }
                 else echo 'Error1';
             }
