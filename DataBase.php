@@ -83,12 +83,12 @@ class DataBase
         } else return false;
     }
 
-    function getUserId($email){
+    function getUserId($table, $email){
 
         $email = $this->prepareData($email);
         $userid;
 
-        $this->sql = "Select * from users where Email = '" . $email . "'"; 
+        $this->sql = "select * from " . $table . " where Email = '" . $email . "'";
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
         if (mysqli_num_rows($result) != 0) {
@@ -96,36 +96,53 @@ class DataBase
             $dbuser_id = $row['id'];
             if ($dbemail == $email) {
                 $userid = $dbuser_id;
-            } else return false;
-        } else return false;
-
-        echo $userid;
-        $connect->close();
-    }
+                return $userid;                    
+            } 
+            else return false;
+        } 
+        else return false;
+    }   
 
     function getVehicleId($userid){
 
-        $userid = $this->prepareData($userid);
-        $vehicleid = '';
+        $email = $this->prepareData($email);
+        $userid = $this->getUserId('users', $email);
 
-        $this->sql = "Select * from vehicles where user_id = '" . $userid . "'"; 
+
+        $this->sql = "select * from " . $table . " where user_id = '" . $userid . "'";
+        
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
+
         if (mysqli_num_rows($result) != 0) {
-            $dbuser_id = $row['user_id'];
-            $dbvehicle_id = $row['id'];
+                $dbuser_id = $row['user_id'];    
+
             if ($dbuser_id == $userid) {
                 $return_arr['tags'] = array();
-                while($row = $result->fetch_array()){
-                    array_psuh($return_arr['tags'], array (
-                        'id'=>$row['id']
-                    ));
+                     array_push($return_arr['tags'], array(
+                            'Vehicle Id'=>$row['id'],
+                            'Make'=>$row['Make'],
+                            'Model'=>$row['Model'],
+                            'Color'=>$row['Color'],
+                            'Year'=>$row['Year'],
+                            'User id'=>$row['user_id']
+                        ));
+                    while($row = mysqli_fetch_assoc($result)){
+                        array_push($return_arr['tags'], array(
+                            'Vehicle Id'=>$row['id'],
+                            'Make'=>$row['Make'],
+                            'Model'=>$row['Model'],
+                            'Color'=>$row['Color'],
+                            'Year'=>$row['Year'],
+                            'User id'=>$row['user_id']
+                        ));
+                    }
+                    echo json_encode($return_arr);
+                    return true;
                 }
-                echo json_decode($return_arr);
-            } else echo 'No user id associated with vehicles';
-        } else echo 'No results';
-
-        $connect->close();
+                else echo 'Error1';
+            }
+             else echo 'Error2'; 
     }
 
     function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email) //TODO Select the user_id to link the vehicle to the login user 
