@@ -1,11 +1,11 @@
 <?php
 require "test.php";
 $db = new DataBase();
-$Email = $_GET['Email'];
+$Email = $_POST['Email'];
 
 if (isset($Email)) {
     if ($db->dbConnect()) {
-        if ($db->getUserId('users', $_GET['Email'])) {
+        if ($db->getUserId('users', $_POST['Email'])) {
             //echo "Data Retrieved";
         } else echo "Fetching Data Failed";
     } else echo "Error: Database connection";

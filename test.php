@@ -55,38 +55,29 @@ class DataBase
     }
 
     
-    function getVehicleId($table, $email){ //Retrieves all vehicle data related to the tags registered by the user
+        function getVehicleId($vin){ //Retrieves all vehicle data related to the tags registered by the user
 
-        $email = $this->prepareData($email);
-        $userid = $this->getUserId('users', $email);
+        $vin = $this->prepareData($vin);
 
 
-        $this->sql = "select * from " . $table . " where user_id = '" . $userid . "'";
+        $this->sql = "Select * from vehicles where VIN = '" . $vin . "'"; //Retrieve new stored vehicle to store the Tag into the Tags table.
         
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
 
         if (mysqli_num_rows($result) != 0) {
-                $dbuser_id = $row['user_id'];    
+                $dbvin_id = $row['VIN'];    
 
-            if ($dbuser_id == $userid) {
+            if ($dbvin_id == $vin) {
                 $return_arr['vehicles'] = array();
                      array_push($return_arr['vehicles'], array(
                             'Vehicle_Id'=>$row['id'],
-                            'Make'=>$row['Make'],
-                            'Model'=>$row['Model'],
-                            'Color'=>$row['Color'],
-                            'Year'=>$row['Year'],
-                            'User_id'=>$row['user_id'],
+                            'VIN'=>$row['VIN']
                         ));
                     while($row = mysqli_fetch_assoc($result)){
                         array_push($return_arr['vehicles'], array(
                             'Vehicle_Id'=>$row['id'],
-                            'Make'=>$row['Make'],
-                            'Model'=>$row['Model'],
-                            'Color'=>$row['Color'],
-                            'Year'=>$row['Year'],
-                            'User_id'=>$row['user_id']
+                            'VIN'=>$row['VIN']
                         ));
                     }
                     return json_encode($return_arr);
@@ -96,6 +87,18 @@ class DataBase
              else echo 'Error2'; 
         }
 
+        function setTagId($tagid, $vehicleid){
+
+        $tagid = $this->prepareData($tagid);
+        $vehicleid = $this->prepareData($vehicleid);
+
+         $this->sql = "INSERT INTO tags (Tag, vehicle_id) VALUES ('" . $tagid . "','" . $vehicleid . "')";
+            if (mysqli_query($this->connect, $this->sql)) {
+                        return true;
+            } 
+            else return false;
+        
+        }
 
         function getTagId($table, $vehicleid) 
         {
@@ -128,7 +131,57 @@ class DataBase
                 else echo 'Error1';
             }
              else echo 'Error2'; 
-    }
+        }
+
+        function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email) //TODO Select the user_id to link the vehicle to the login user 
+        {
+
+        $vin = $this->prepareData($vin);
+        $make = $this->prepareData($make);
+        $model = $this->prepareData($model);
+        $year = $this->prepareData($year);
+        $color = $this->prepareData($color);
+        $type = $this->prepareData($type);
+        $tagid = $this->prepareData($tagid);
+        $email = $this->prepareData($email);
+        $vehicleid;
+
+        $userid = $this->getUserId('users', $email);
+               
+
+        $this->sql =
+            "INSERT INTO " . $table . " (VIN, Make, Model, Year, Color, Type, user_id) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $year . "','" . $color . "','" . $type . "','" . $userid . "')";
+        if (mysqli_query($this->connect, $this->sql)) { 
+            return true;
+        } else return false;       
+             
+        
+        }
+
+        function tagRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email){
+
+        $vin = $this->prepareData($vin);
+        $make = $this->prepareData($make);
+        $model = $this->prepareData($model);
+        $year = $this->prepareData($year);
+        $color = $this->prepareData($color);
+        $type = $this->prepareData($type);
+        $tagid = $this->prepareData($tagid);
+        $email = $this->prepareData($email);
+
+        $this->assetRegistration('vehicles', $vin, $make, $model, $year, $color, $type, $tagid, $email);
+
+        $response = $this->getVehicleId($vin);
+            $result = json_decode($response, true);
+            foreach ($result['vehicles'] as $element) {
+                    $vehicleid = $element['Vehicle_Id'];
+            }
+
+        $this->setTagId($tagid, $vehicleid); 
+           
+        }
+        
+        
 
        
     }

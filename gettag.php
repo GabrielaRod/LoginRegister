@@ -1,11 +1,11 @@
 <?php
-require "test.php";
+require "DataBase.php";
 $db = new DataBase();
-$VehicleId = $_GET['vehicle_id'];
+$VehicleId = $_POST['vehicle_id'];
 
 if (isset($VehicleId)) {
     if ($db->dbConnect()) {
-        if ($db->getTagId('tags', $_GET['vehicle_id'])) {
+        if ($db->getTagId('tags', $_POST['vehicle_id'])) {
             //echo "Data Retrieved";
         } else echo "Fetching Data Failed";
     } else echo "Error: Database connection";

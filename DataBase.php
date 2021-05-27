@@ -34,6 +34,7 @@ class DataBase
         return mysqli_real_escape_string($this->connect, stripslashes(htmlspecialchars($data)));
     }
 
+    /*************** LOGIN USER ***************/
     function logIn($table, $email, $password)
     {
         $email = $this->prepareData($email);
@@ -52,6 +53,7 @@ class DataBase
         return $login;
     }
 
+    /*************** SIGN UP USER ***************/
     function signUp($table, $firstname, $lastname, $domid, $address, $city, $phonenumber, $email, $password)
     {
         $firstname = $this->prepareData($firstname);
@@ -71,18 +73,7 @@ class DataBase
     }
 
 
-     function tagRegistration($tagid, $vehicleid)
-    {
-        $tagid = $this->prepareData($tagid);
-        $vehicleid = $this->prepareData($vehicleid);
-
-        $this->sql =
-            "INSERT INTO " . Tags . " (Tag, vehicle_id) VALUES ('" . $tagid . "','" . $vehicleid . "')";
-        if (mysqli_query($this->connect, $this->sql)) {
-            return true;
-        } else return false;
-    }
-
+    /*************** GET USER ID ***************/
     function getUserId($table, $email){
 
         $email = $this->prepareData($email);
@@ -101,40 +92,80 @@ class DataBase
             else return false;
         } 
         else return false;
-    }   
+    }
 
-    function getVehicleId($userid){
+    
+    /*************** GET VEHICLE ID ***************/
+    function getVehicleId($vin){ //Retrieves all vehicle data related to the tags registered by the user
 
-        $email = $this->prepareData($email);
-        $userid = $this->getUserId('users', $email);
+        $vin = $this->prepareData($vin);
 
 
-        $this->sql = "select * from " . $table . " where user_id = '" . $userid . "'";
+        $this->sql = "Select * from vehicles where VIN = '" . $vin . "'"; //Retrieve new stored vehicle to store the Tag into the Tags table.
         
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
 
         if (mysqli_num_rows($result) != 0) {
-                $dbuser_id = $row['user_id'];    
+                $dbvin_id = $row['VIN'];    
 
-            if ($dbuser_id == $userid) {
+            if ($dbvin_id == $vin) {
+                $return_arr['vehicles'] = array();
+                     array_push($return_arr['vehicles'], array(
+                            'Vehicle_Id'=>$row['id'],
+                            'VIN'=>$row['VIN']
+                        ));
+                    while($row = mysqli_fetch_assoc($result)){
+                        array_push($return_arr['vehicles'], array(
+                            'Vehicle_Id'=>$row['id'],
+                            'VIN'=>$row['VIN']
+                        ));
+                    }
+                    return json_encode($return_arr);
+                }
+                else echo 'Error1';
+            }
+             else echo 'Error2'; 
+        }
+
+
+    /*************** SET TAG ID ***************/
+    function setTagId($tagid, $vehicleid){
+
+        $tagid = $this->prepareData($tagid);
+        $vehicleid = $this->prepareData($vehicleid);
+
+         $this->sql = "INSERT INTO tags (Tag, vehicle_id) VALUES ('" . $tagid . "','" . $vehicleid . "')";
+            if (mysqli_query($this->connect, $this->sql)) {
+                        return true;
+            } 
+            else return false;
+        
+    }
+
+    /*************** GET TAG ID ***************/
+    function getTagId($table, $vehicleid){
+        $vehicleid = $this->prepareData($vehicleid);
+
+        
+        $this->sql = "SELECT * FROM " . $table . " WHERE vehicle_id ='" . $vehicleid . "'";
+
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+
+        if (mysqli_num_rows($result) != 0) {
+                $dbvehicle_id = $row['vehicle_id'];    
+
+            if ($dbvehicle_id == $vehicleid) {
                 $return_arr['tags'] = array();
                      array_push($return_arr['tags'], array(
-                            'Vehicle Id'=>$row['id'],
-                            'Make'=>$row['Make'],
-                            'Model'=>$row['Model'],
-                            'Color'=>$row['Color'],
-                            'Year'=>$row['Year'],
-                            'User id'=>$row['user_id']
+                            'Tag_Id'=>$row['id'],
+                            'Vehicle_Id'=>$row['vehicle_id']
                         ));
                     while($row = mysqli_fetch_assoc($result)){
                         array_push($return_arr['tags'], array(
-                            'Vehicle Id'=>$row['id'],
-                            'Make'=>$row['Make'],
-                            'Model'=>$row['Model'],
-                            'Color'=>$row['Color'],
-                            'Year'=>$row['Year'],
-                            'User id'=>$row['user_id']
+                            'Tag_Id'=>$row['id'],
+                            'Vehicle_Id'=>$row['vehicle_id']
                         ));
                     }
                     echo json_encode($return_arr);
@@ -143,10 +174,12 @@ class DataBase
                 else echo 'Error1';
             }
              else echo 'Error2'; 
-    }
+        }
 
-    function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email) //TODO Select the user_id to link the vehicle to the login user 
-    {
+
+    /*************** REGISTER ASSET ***************/
+    function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email){
+
         $vin = $this->prepareData($vin);
         $make = $this->prepareData($make);
         $model = $this->prepareData($model);
@@ -157,77 +190,40 @@ class DataBase
         $email = $this->prepareData($email);
         $vehicleid;
 
-
-        $email = $this->prepareData($email);
-        $userid;
-
-        $this->sql = "Select * from users where Email = '" . $email . "'"; 
-        $result = mysqli_query($this->connect, $this->sql);
-        $row = mysqli_fetch_assoc($result);
-        if (mysqli_num_rows($result) != 0) {
-            $dbemail = $row['Email'];
-            $dbuser_id = $row['id'];
-            if ($dbemail == $email) {
-                $userid = $dbuser_id;
-                echo $userid;
-            } else return false;
-        } else return false;
-
+        $userid = $this->getUserId('users', $email);
+               
 
         $this->sql =
             "INSERT INTO " . $table . " (VIN, Make, Model, Year, Color, Type, user_id) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $year . "','" . $color . "','" . $type . "','" . $userid . "')";
-
-        if (mysqli_query($this->connect, $this->sql)) {
+        if (mysqli_query($this->connect, $this->sql)) { 
             return true;
-        } else return false;
-
+        } else return false;       
+             
         
-        $this->sql = "Select * from vehicles where VIN = '" . $vin . "'"; //Retrieve new stored vehicle to store the Tag into the Tags table.
-                $result = mysqli_query($this->connect, $this->sql);
-                $row = mysqli_fetch_assoc($result);
-            if (mysqli_num_rows($result) != 0) {
-                $dbvin = $row['VIN'];
-                $dbvehicle_id = $row['id'];
-                if ($dbvin == $vin) {
-                    $vehicleid = $dbvehicle_id;
-                    echo $vehicleid;
+    }
 
-                    tagRegistration($tagid, $vehicleid);
-                    
-                } else return false;
-             }else return false;
-        }
+    /*************** REGISTER TAG ***************/
+    function tagRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email){
 
-    function getTagId($table, $email) //Retrieves all vehicle data related to the tags registered by the user
-    {
+        $vin = $this->prepareData($vin);
+        $make = $this->prepareData($make);
+        $model = $this->prepareData($model);
+        $year = $this->prepareData($year);
+        $color = $this->prepareData($color);
+        $type = $this->prepareData($type);
+        $tagid = $this->prepareData($tagid);
         $email = $this->prepareData($email);
 
-        $userid = getUserId($email);
+        $this->assetRegistration('vehicles', $vin, $make, $model, $year, $color, $type, $tagid, $email);
 
+        $response = $this->getVehicleId($vin);
+            $result = json_decode($response, true);
+            foreach ($result['vehicles'] as $element) {
+                    $vehicleid = $element['Vehicle_Id'];
+            }
 
-        //$this->sql = "SELECT tags.id, vehicles.vin, vehicles.make, vehicles.model, vehicles.color FROM " . $table . " JOIN tags ON tags.vehicle_id=vehicles.id JOIN users ON users.id=vehicles.user_id WHERE users.id ='" . $userid . "'";
-        
-        $this->sql = "SELECT tags.id FROM " . $table . " WHERE users.id ='" . $userid . "'";
-
-        $result = mysqli_query($this->connect, $this->sql);
-        $row = mysqli_fetch_assoc($result);
-        if (mysqli_num_rows($result) != 0) {
-            $dbuserid = $row['id'];
-            if ($dbuserid == $userid) {
-                while($row[] = mysqli_fetch_assoc($result)){
-                    $item = $row;
-                    $json = json_encode($item);
-                }else {
-                    echo "0 Results";
-                }
-
-                echo $json;
-                $connect->close();
-                $gettag = true;
-            } else $gettag = false;
-        } else $gettag = false;
-
-        return $gettag;
+        $this->setTagId($tagid, $vehicleid); 
+           
     }
 }
 
