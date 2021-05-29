@@ -87,18 +87,23 @@ class DataBase
              else echo 'Error2'; 
         }
 
-        function setTagId($tagid, $vehicleid){
+
+        function setTagId($table, $tagid, $vehicleid){
 
         $tagid = $this->prepareData($tagid);
         $vehicleid = $this->prepareData($vehicleid);
+        $table = $this->prepareData($table); 
 
-         $this->sql = "INSERT INTO tags (Tag, vehicle_id) VALUES ('" . $tagid . "','" . $vehicleid . "')";
-            if (mysqli_query($this->connect, $this->sql)) {
-                        return true;
-            } 
-            else return false;
+        echo $tagid ."<br>" . $vehicleid . "<br>" . $table ."<br>";  
+
+        $this->sql = "INSERT INTO tags (Tag, vehicle_id) VALUES ('SUVGCLASSTAG02', '77')";
+
+        if (mysqli_query($this->connect, $this->sql) === true) { 
+            echo 'Registration Sucessful';
+        } else echo 'An error ocurr while registering the tag';   
         
         }
+
 
         function getTagId($table, $vehicleid) 
         {
@@ -110,6 +115,7 @@ class DataBase
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
 
+        var_dump($result);
         if (mysqli_num_rows($result) != 0) {
                 $dbvehicle_id = $row['vehicle_id'];    
 
@@ -169,19 +175,22 @@ class DataBase
         $tagid = $this->prepareData($tagid);
         $email = $this->prepareData($email);
 
+
         $this->assetRegistration('vehicles', $vin, $make, $model, $year, $color, $type, $tagid, $email);
 
         $response = $this->getVehicleId($vin);
             $result = json_decode($response, true);
             foreach ($result['vehicles'] as $element) {
                     $vehicleid = $element['Vehicle_Id'];
+                    echo $vehicleid;
             }
 
-        $this->setTagId($tagid, $vehicleid); 
+        $this->setTagId($tagid, $vehicleid);
            
         }
         
         
+
 
        
     }

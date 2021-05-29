@@ -144,11 +144,14 @@ class DataBase
     }
 
     /*************** GET TAG ID ***************/
-    function getTagId($table, $vehicleid){
-        $vehicleid = $this->prepareData($vehicleid);
+    function getTagId($table, $email){
 
-        
-        $this->sql = "SELECT * FROM " . $table . " WHERE vehicle_id ='" . $vehicleid . "'";
+        $email = $this->prepareData($email);
+
+        $userid = $this->getUserId('users', $email);
+
+        /*To select vehicle id based on user_id*/
+        $this->sql = "SELECT * FROM " . $table . " WHERE user_id ='" . $userid . "'";
 
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
@@ -168,7 +171,7 @@ class DataBase
                             'Vehicle_Id'=>$row['vehicle_id']
                         ));
                     }
-                    echo json_encode($return_arr);
+                    //return json_encode($return_arr);
                     return true;
                 }
                 else echo 'Error1';
@@ -217,7 +220,7 @@ class DataBase
         $this->assetRegistration('vehicles', $vin, $make, $model, $year, $color, $type, $tagid, $email);
 
         $response = $this->getVehicleId($vin);
-            $result = json_decode($response, true);
+        $result = json_decode($response, true);
             foreach ($result['vehicles'] as $element) {
                     $vehicleid = $element['Vehicle_Id'];
             }
