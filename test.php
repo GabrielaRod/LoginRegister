@@ -96,10 +96,11 @@ class DataBase
 
         echo $tagid ."<br>" . $vehicleid . "<br>" . $table ."<br>";  
 
-        $this->sql = "INSERT INTO tags (Tag, vehicle_id) VALUES ('SUVGCLASSTAG02', '77')";
+        $this->sql = "INSERT INTO tags (Tag, vehicle_id) VALUES ('SUVGCLASSTAG02', '5')";
 
         if (mysqli_query($this->connect, $this->sql) === true) { 
             echo 'Registration Sucessful';
+            return true;
         } else echo 'An error ocurr while registering the tag';   
         
         }
