@@ -162,17 +162,17 @@ class DataBase
             if ($dbvehicle_id == $vehicleid) {
                 $return_arr['tags'] = array();
                      array_push($return_arr['tags'], array(
-                            'Tag_Id'=>$row['id'],
+                            'Tag_Id'=>$row['Tag'],
                             'Vehicle_Id'=>$row['vehicle_id']
                         ));
                     while($row = mysqli_fetch_assoc($result)){
                         array_push($return_arr['tags'], array(
-                            'Tag_Id'=>$row['id'],
+                            'Tag_Id'=>$row['Tag'],
                             'Vehicle_Id'=>$row['vehicle_id']
                         ));
                     }
-                    //return json_encode($return_arr);
-                    return true;
+                    return json_encode($return_arr);
+                    //return true;
                 }
                 else echo 'Error1';
             }
@@ -227,6 +227,31 @@ class DataBase
 
         $this->setTagId($tagid, $vehicleid); 
            
+    }
+
+    /*************** CREATE ALERT ***************/
+    function createAlert($table, $tagid){
+
+        $vin = $this->prepareData($vin);
+        $make = $this->prepareData($make);
+        $model = $this->prepareData($model);
+        $year = $this->prepareData($year);
+        $color = $this->prepareData($color);
+        $type = $this->prepareData($type);
+        $tagid = $this->prepareData($tagid);
+        $email = $this->prepareData($email);
+        $vehicleid;
+
+        $userid = $this->getUserId('users', $email);
+               
+
+        $this->sql =
+            "INSERT INTO " . $table . " (VIN, Make, Model, Year, Color, Type, user_id) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $year . "','" . $color . "','" . $type . "','" . $userid . "')";
+        if (mysqli_query($this->connect, $this->sql)) { 
+            return true;
+        } else return false;       
+             
+        
     }
 }
 

@@ -1,13 +1,13 @@
 <?php
-require "test.php";
+require "testing.php";
 $db = new DataBase();
-$VehicleId = $_POST['VehicleId'];
+$Email = $_GET['Email'];
 
-if (isset($VehicleId)) {
+if (isset($Email)) {
     if ($db->dbConnect()) {
-        if ($db->getTagId('tags', $_POST['VehicleId'])) {
-            echo "Data Retrieved";
-        } else echo "Fetching Data Failed";
+        if ($db->getTagId('tags', $_GET['Email'])) {
+            //echo "Data Retrieved";
+        } else echo " ";
     } else echo "Error: Database connection";
 } else echo "All fields are required!";
 ?>
