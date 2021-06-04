@@ -88,13 +88,10 @@ class DataBase
         }
 
 
-        function setTagId($table, $tagid, $vehicleid){
+        function setTagId($tagid, $vehicleid){
 
         $tagid = $this->prepareData($tagid);
-        $vehicleid = $this->prepareData($vehicleid);
-        $table = $this->prepareData($table); 
-
-        echo $tagid ."<br>" . $vehicleid . "<br>" . $table ."<br>";  
+        $vehicleid = $this->prepareData($vehicleid);  
 
         $this->sql = "INSERT INTO tags (Tag, vehicle_id) VALUES ('SUVGCLASSTAG02', '5')";
 

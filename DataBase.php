@@ -94,6 +94,34 @@ class DataBase
         else return false;
     }
 
+    /*************** GET USER ID ***************/
+    function getUserInfo($table, $email){
+
+        $email = $this->prepareData($email);
+        $firstname;
+        $lastname;
+        $phonenumber;
+
+        $this->sql = "select * from " . $table . " where Email = '" . $email . "'";
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+        if (mysqli_num_rows($result) != 0) {
+            $dbemail = $row['Email'];
+            $dbfirstname = $row['FirstName'];
+            $dblastname = $row['LastName'];
+            $dbphonenumber = $row['PhoneNumber'];
+            if ($dbemail == $email) {
+                $firstname = $dbfirstname;
+                $lastname = $dblastname;
+                $phonenumber = $dbphonenumber;
+                return $firstname." ".$lastname." ".$phonenumber;                    
+            } 
+            else return false;
+        } 
+        else return false;
+    }
+
+
     
     /*************** GET VEHICLE ID ***************/
     function getVehicleId($vin){ //Retrieves all vehicle data related to the tags registered by the user
@@ -230,17 +258,16 @@ class DataBase
     }
 
     /*************** CREATE ALERT ***************/
-    function createAlert($table, $tagid){
+    function createAlert($table, $vin, $make, $model, $color, $firstname, $lastname, $phonenumber, $status){
 
         $vin = $this->prepareData($vin);
         $make = $this->prepareData($make);
         $model = $this->prepareData($model);
-        $year = $this->prepareData($year);
         $color = $this->prepareData($color);
-        $type = $this->prepareData($type);
-        $tagid = $this->prepareData($tagid);
-        $email = $this->prepareData($email);
-        $vehicleid;
+        $firstname = $this->prepareData($firstname);
+        $lastname = $this->prepareData($lastname);
+        $phonenumber = $this->prepareData($phonenumber);
+        $status = $this->prepareData($status);
 
         $userid = $this->getUserId('users', $email);
                
