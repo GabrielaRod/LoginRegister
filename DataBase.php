@@ -94,7 +94,7 @@ class DataBase
         else return false;
     }
 
-    /*************** GET USER ID ***************/
+    /*************** GET USER INFORMATION (CREATE REPORT ENTRY) ***************/
     function getUserInfo($table, $email){
 
         $email = $this->prepareData($email);
@@ -121,6 +121,43 @@ class DataBase
         else return false;
     }
 
+
+    /*************** GET VEHICLE INFORMATION (CREATE REPORT ENTRY) ***************/
+    function getVehicleInfo($table, $vehicleid){
+
+        $vehicleid = $this->prepareData($vehicleid);
+
+        $this->sql = "select * from " . $table . " where id = '" . $vehicleid . "'";
+        
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+
+        if (mysqli_num_rows($result) != 0) {
+            $dbid = $row['id'];
+
+            if ($dbid == $vehicleid) {
+                $return_arr['vehicle'] = array();
+                array_push($return_arr['vehicle'], array(
+                            'VIN'=>$row['VIN'],
+                            'Make'=>$row['Make'],
+                            'Model'=>$row['Model'],
+                            'Color'=>$row['Color']
+                        ));
+                    /*while($row = mysqli_fetch_assoc($result)){
+                        array_push($return_arr['vehicle'], array(
+                            'VIN'=>$row['VIN'],
+                            'Make' =>$row['Make'],
+                            'Model' =>$row['Model'],
+                            'Color' =>$row['Color']
+                        ));*/
+                        echo json_encode($return_arr);  
+                    }
+                                      
+                
+                else return false;
+            } 
+            else return false;
+    }
 
     
     /*************** GET VEHICLE ID ***************/
@@ -172,14 +209,14 @@ class DataBase
     }
 
     /*************** GET TAG ID ***************/
-    function getTagId($table, $email){
+    /*1. Gets all info related to vehicle_id provided
+      2. All Tag id's get inserted in an array or JSONs*/
+    function getTagId($table, $vehicleid){
 
-        $email = $this->prepareData($email);
+       $vehicleid = $this->prepareData($vehicleid);
 
-        $userid = $this->getUserId('users', $email);
-
-        /*To select vehicle id based on user_id*/
-        $this->sql = "SELECT * FROM " . $table . " WHERE user_id ='" . $userid . "'";
+        
+        $this->sql = "SELECT * FROM " . $table . " WHERE vehicle_id ='" . $vehicleid . "'";
 
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
@@ -190,17 +227,12 @@ class DataBase
             if ($dbvehicle_id == $vehicleid) {
                 $return_arr['tags'] = array();
                      array_push($return_arr['tags'], array(
-                            'Tag_Id'=>$row['Tag'],
+                            'Tag_Id'=>$row['id'],
                             'Vehicle_Id'=>$row['vehicle_id']
                         ));
-                    while($row = mysqli_fetch_assoc($result)){
-                        array_push($return_arr['tags'], array(
-                            'Tag_Id'=>$row['Tag'],
-                            'Vehicle_Id'=>$row['vehicle_id']
-                        ));
-                    }
-                    return json_encode($return_arr);
-                    //return true;
+          
+                    echo json_encode($return_arr);
+                    return true;
                 }
                 else echo 'Error1';
             }
