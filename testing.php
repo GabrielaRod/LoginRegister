@@ -97,7 +97,9 @@ class DataBase
         $email = $this->prepareData($email);
 
         $response = $this->getVehicleId('vehicles', $email);
-            $result = json_decode($response, true);
+        $result = json_decode($response, true);
+
+        $return_arr['tags'] = array();
 
             foreach ($result['vehicles'] as $element) {
                     $vehicleid = $element['Vehicle_Id']; 
@@ -112,7 +114,6 @@ class DataBase
                         $dbvehicle_id = $row['vehicle_id'];    
 
                     if ($dbvehicle_id == $vehicleid) {
-                    $return_arr['tags'] = array();
                         array_push($return_arr['tags'], array(
                             'Tag'=>$row['Tag'],
                             'Vehicle_Id'=>$row['vehicle_id']
@@ -123,15 +124,16 @@ class DataBase
                             'Vehicle_Id'=>$row['vehicle_id']
                             ));
                         }
-                    echo json_encode($return_arr);
+                    
                     }
-                else echo 'Error1';
+                    else echo 'Error1';      
+                    }
+                else echo '<br>';
                 }
-             else echo 'Error2';       
-            }
+        echo json_encode($return_arr);
+        
+    }
 
-       
-        }
 }
 
 ?>
