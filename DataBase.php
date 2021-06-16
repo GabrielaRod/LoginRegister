@@ -98,23 +98,22 @@ class DataBase
     function getUserInfo($table, $email){
 
         $email = $this->prepareData($email);
-        $firstname;
-        $lastname;
-        $phonenumber;
 
         $this->sql = "select * from " . $table . " where Email = '" . $email . "'";
+
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
+
         if (mysqli_num_rows($result) != 0) {
             $dbemail = $row['Email'];
-            $dbfirstname = $row['FirstName'];
-            $dblastname = $row['LastName'];
-            $dbphonenumber = $row['PhoneNumber'];
+
             if ($dbemail == $email) {
-                $firstname = $dbfirstname;
-                $lastname = $dblastname;
-                $phonenumber = $dbphonenumber;
-                return $firstname." ".$lastname." ".$phonenumber;                    
+               $return_arr['user'] = array();
+                array_push($return_arr['user'], array(
+                            'FirstName'=>$row['FirstName'],
+                            'LastName'=>$row['LastName']
+                        ));
+                        return json_encode($return_arr);              
             } 
             else return false;
         } 
@@ -136,20 +135,13 @@ class DataBase
             $dbid = $row['id'];
 
             if ($dbid == $vehicleid) {
-                $return_arr['vehicle'] = array();
-                array_push($return_arr['vehicle'], array(
+                $return_arr = array();
+                array_push($return_arr, array(
                             'VIN'=>$row['VIN'],
                             'Make'=>$row['Make'],
                             'Model'=>$row['Model'],
                             'Color'=>$row['Color']
                         ));
-                    /*while($row = mysqli_fetch_assoc($result)){
-                        array_push($return_arr['vehicle'], array(
-                            'VIN'=>$row['VIN'],
-                            'Make' =>$row['Make'],
-                            'Model' =>$row['Model'],
-                            'Color' =>$row['Color']
-                        ));*/
                         echo json_encode($return_arr);  
                     }
                                       
@@ -290,28 +282,42 @@ class DataBase
     }
 
     /*************** CREATE ALERT ***************/
-    function createAlert($table, $vin, $make, $model, $color, $firstname, $lastname, $phonenumber, $status){
+    function createAlert($table, $vin, $make, $model, $color, $status, $email){
 
         $vin = $this->prepareData($vin);
         $make = $this->prepareData($make);
         $model = $this->prepareData($model);
         $color = $this->prepareData($color);
-        $firstname = $this->prepareData($firstname);
-        $lastname = $this->prepareData($lastname);
-        $phonenumber = $this->prepareData($phonenumber);
         $status = $this->prepareData($status);
+        $email = $this->prepareData($email);
 
-        $userid = $this->getUserId('users', $email);
-               
+        $response = $this->getUserInfo('users', $email);
+
+        $result = json_decode($response, true);
+            foreach($result['user'] as $data){
+                $firstname = $data['FirstName'];
+                $lastname = $data['LastName'];
+            }
 
         $this->sql =
-            "INSERT INTO " . $table . " (VIN, Make, Model, Year, Color, Type, user_id) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $year . "','" . $color . "','" . $type . "','" . $userid . "')";
+            "INSERT INTO " . $table . " (VIN, Make, Model, Color, FirstName, LastName, PhoneNumber, Status) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $color . "','" . $firstname . "','" . $lastname . "','" . $email . "','". $status . "')";
         if (mysqli_query($this->connect, $this->sql)) { 
             return true;
-        } else return false;       
-             
-        
+        } else return false;     
+            
     }
+
+    /*************** DISABLE ALERT ***************/
+    function disableAlert($table, $email){
+        $email = $this->prepareData($email);
+
+        $this->sql = "UPDATE " . $table . " SET `Status` = 'INACTIVE' WHERE `Status` = 'ACTIVE' AND `Email` = '" . $email . "'";
+        if (mysqli_query($this->connect, $this->sql)) { 
+            return true;
+        } else return false;     
+            
+    }
+                
 }
 
 ?>

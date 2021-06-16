@@ -99,7 +99,7 @@ class DataBase
         $response = $this->getVehicleId('vehicles', $email);
         $result = json_decode($response, true);
 
-        $return_arr['tags'] = array();
+        $return_arr = array();
 
             foreach ($result['vehicles'] as $element) {
                     $vehicleid = $element['Vehicle_Id']; 
@@ -114,12 +114,12 @@ class DataBase
                         $dbvehicle_id = $row['vehicle_id'];    
 
                     if ($dbvehicle_id == $vehicleid) {
-                        array_push($return_arr['tags'], array(
+                        array_push($return_arr, array(
                             'Tag'=>$row['Tag'],
                             'Vehicle_Id'=>$row['vehicle_id']
                             ));
                     while($row = mysqli_fetch_assoc($result2)){
-                        array_push($return_arr['tags'], array(
+                        array_push($return_arr, array(
                             'Tag'=>$row['Tag'],
                             'Vehicle_Id'=>$row['vehicle_id']
                             ));
@@ -128,7 +128,7 @@ class DataBase
                     }
                     else echo 'Error1';      
                     }
-                else echo '<br>';
+                else echo '';
                 }
         echo json_encode($return_arr);
         
