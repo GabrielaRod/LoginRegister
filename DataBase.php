@@ -203,33 +203,46 @@ class DataBase
     /*************** GET TAG ID ***************/
     /*1. Gets all info related to vehicle_id provided
       2. All Tag id's get inserted in an array or JSONs*/
-    function getTagId($table, $vehicleid){
+    function getTagId($table, $email){
 
-       $vehicleid = $this->prepareData($vehicleid);
+       $email = $this->prepareData($email);
 
-        
-        $this->sql = "SELECT * FROM " . $table . " WHERE vehicle_id ='" . $vehicleid . "'";
+        $response = $this->getVehicleId('vehicles', $email);
+        $result = json_decode($response, true);
 
-        $result = mysqli_query($this->connect, $this->sql);
-        $row = mysqli_fetch_assoc($result);
+        $return_arr = array();
 
-        if (mysqli_num_rows($result) != 0) {
-                $dbvehicle_id = $row['vehicle_id'];    
+            foreach ($result['vehicles'] as $element) {
+                    $vehicleid = $element['Vehicle_Id']; 
 
-            if ($dbvehicle_id == $vehicleid) {
-                $return_arr['tags'] = array();
-                     array_push($return_arr['tags'], array(
-                            'Tag_Id'=>$row['id'],
+                    /*To select vehicle id based on user_id*/
+                    $this->sql = "SELECT * FROM " . $table . " WHERE vehicle_id ='" . $vehicleid . "'";
+
+                    $result2 = mysqli_query($this->connect, $this->sql);
+                    $row = mysqli_fetch_assoc($result2);
+
+                    if (mysqli_num_rows($result2) != 0) {
+                        $dbvehicle_id = $row['vehicle_id'];    
+
+                    if ($dbvehicle_id == $vehicleid) {
+                        array_push($return_arr, array(
+                            'Tag'=>$row['Tag'],
                             'Vehicle_Id'=>$row['vehicle_id']
-                        ));
-          
-                    echo json_encode($return_arr);
-                    return true;
+                            ));
+                    while($row = mysqli_fetch_assoc($result2)){
+                        array_push($return_arr, array(
+                            'Tag'=>$row['Tag'],
+                            'Vehicle_Id'=>$row['vehicle_id']
+                            ));
+                        }
+                    
+                    }
+                    else echo 'Error1';      
+                    }
+                else echo '';
                 }
-                else echo 'Error1';
-            }
-             else echo 'Error2'; 
-        }
+        echo json_encode($return_arr);
+    }
 
 
     /*************** REGISTER ASSET ***************/
@@ -300,18 +313,59 @@ class DataBase
             }
 
         $this->sql =
-            "INSERT INTO " . $table . " (VIN, Make, Model, Color, FirstName, LastName, PhoneNumber, Status) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $color . "','" . $firstname . "','" . $lastname . "','" . $email . "','". $status . "')";
+            "INSERT INTO " . $table . " (VIN, Make, Model, Color, FirstName, LastName, Email, Status) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $color . "','" . $firstname . "','" . $lastname . "','" . $email . "','". $status . "')";
         if (mysqli_query($this->connect, $this->sql)) { 
             return true;
         } else return false;     
             
     }
 
-    /*************** DISABLE ALERT ***************/
-    function disableAlert($table, $email){
+
+    /*************** GET ALERTS ***************/
+    function getAlert($table, $email){
+
         $email = $this->prepareData($email);
 
-        $this->sql = "UPDATE " . $table . " SET `Status` = 'INACTIVE' WHERE `Status` = 'ACTIVE' AND `Email` = '" . $email . "'";
+        $this->sql = "SELECT * from " . $table . " WHERE `Status` = 'ACTIVE' AND Email = '" . $email . "'";
+
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+
+        $return_arr = array();
+
+        if (mysqli_num_rows($result) != 0) {
+            $dbemail = $row['Email'];
+
+            if ($dbemail == $email) {
+                array_push($return_arr, array(
+                            'VIN'=>$row['VIN'],
+                            'Make'=>$row['Make'],
+                            'Model'=>$row['Model'],
+                            'Color'=>$row['Color']
+                        ));
+                while($row = mysqli_fetch_assoc($result)){
+                array_push($return_arr, array(
+                            'VIN'=>$row['VIN'],
+                            'Make'=>$row['Make'],
+                            'Model'=>$row['Model'],
+                            'Color'=>$row['Color']
+                        ));
+                        }
+                        echo json_encode($return_arr);  
+                    }
+                
+                else return false;
+            } 
+            else return false; 
+            
+    }
+
+    /*************** DISABLE ALERT ***************/
+    function disableAlert($table, $email, $vin){
+        $email = $this->prepareData($email);
+        $vin = $this->prepareData($vin);
+
+        $this->sql = "UPDATE " . $table . " SET `Status` = 'INACTIVE' WHERE `Status` = 'ACTIVE' AND `Email` = '" . $email . "'" . " AND `VIN` = '" . $vin . "'";
         if (mysqli_query($this->connect, $this->sql)) { 
             return true;
         } else return false;     
