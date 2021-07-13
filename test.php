@@ -187,10 +187,83 @@ class DataBase
            
         }
         
+     
+     /************************************************/
+     /* This querys are related to the Raspberry Pi */
+     /***********************************************/
+
+    /*************** CHECK IF MACADDRESS ALREADY EXISTS IN LOCATION ***************/
+    function ifExists($macAddress)
+    {
+        $macAddress = $this->prepareData($macAddress);
         
+        $this->sql = "SELECT * FROM locations WHERE `created_at` >= NOW() - INTERVAL 5 MINUTE AND `TagID` = '" . $macAddress . "'";
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
 
+        if (mysqli_num_rows($result) != 0) {
+            $dbmacAddress = $row['TagID'];
+            if($dbmacAddress == $macAddress && )
+            {
+                $exists = true;
+            }  
+            else $exists = false;
+            } 
+            else $exists = false;
 
-       
+        return $exists;
     }
+
+    function getLocation($antennaid)
+    {
+        $antennaid = $this->prepareData($antennaid);
+        
+        $this->sql = "SELECT * FROM antennas WHERE id= '" . $antennaid . "'";
+
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+
+        if (mysqli_num_rows($result) != 0) {
+            $dbcoordinateid = $row['TagID'];
+            if($dbmacAddress == $macAddress && )
+            {
+                $exists = true;
+            }  
+            else $exists = false;
+            } 
+            else $exists = false;
+
+        return $exists;
+    }
+
+    function getData($table, $json, $antennaid){
+
+        $json = $this->prepareData($json);
+        $antennaid = $this->prepareData($antennaid);
+
+         $result = json_decode($json, true);
+            foreach ($result['Data'] as $element) {
+                    $macaddress = $element['macAddress'];
+                    echo $macaddress;
+            }
+
+
+        $this->sql = "INSERT INTO tags (Tag, vehicle_id) VALUES ('SUVGCLASSTAG02', '5')";
+
+        if (mysqli_query($this->connect, $this->sql) === true) { 
+            echo 'Registration Sucessful';
+            return true;
+        } else echo 'An error ocurr while registering the tag';   
+        
+        }
+
+    function test($data){
+        $data = $this->prepareData($data);
+
+        echo($data);
+    }
+
+
+}
 
 ?>
