@@ -137,7 +137,25 @@ class DataBase
              else echo 'Error2'; 
         }
 
-        function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email) //TODO Select the user_id to link the vehicle to the login user 
+
+        function userVehicle($userid, $vehicleid)  
+        {
+            $table = 'app_user_vehicle';
+            $userid = $this->prepareData($userid);
+            $vehicleid = $this->prepareData($vehicleid);
+
+            $this->sql =
+            "INSERT INTO " . $table . " (app_user_id, vehicle_id) VALUES ('" . $userid . "','" . $vehicleid . "')";
+        if (mysqli_query($this->connect, $this->sql)) { 
+            return true;
+        } else return false;       
+
+        }
+
+        /*TODO*/
+        //TABLE Vehicles no longer has a column "user_id", I have created a pivot table with this relationship called "app_user_vehicle"
+        //where we have the app_user_id and the vehicle_id
+        function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email)  
         {
 
         $vin = $this->prepareData($vin);
@@ -150,15 +168,18 @@ class DataBase
         $email = $this->prepareData($email);
         $vehicleid;
 
-        $userid = $this->getUserId('users', $email);
+        $userid = $this->getUserId('app_users', $email);
                
 
         $this->sql =
-            "INSERT INTO " . $table . " (VIN, Make, Model, Year, Color, Type, user_id) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $year . "','" . $color . "','" . $type . "','" . $userid . "')";
+        "INSERT INTO " . $table . " (VIN, Make, Model, Year, Color, Type) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $year . "','" . $color . "','" . $type . "')";
+        
         if (mysqli_query($this->connect, $this->sql)) { 
             return true;
         } else return false;       
-             
+        
+        $vehicleid = $this->getVehicleId($vin);
+        $this->userVehicle($userid, $vehicleid);
         
         }
 
@@ -203,7 +224,7 @@ class DataBase
 
         if (mysqli_num_rows($result) != 0) {
             $dbmacAddress = $row['TagID'];
-            if($dbmacAddress == $macAddress && )
+            if($dbmacAddress == $macAddress)
             {
                 $exists = true;
             }  
@@ -214,48 +235,75 @@ class DataBase
         return $exists;
     }
 
-    function getLocation($antennaid)
+    function getLocation($locationid)
     {
-        $antennaid = $this->prepareData($antennaid);
+        $locationid = $this->prepareData($locationid);
         
-        $this->sql = "SELECT * FROM antennas WHERE id= '" . $antennaid . "'";
+        $this->sql = "SELECT * FROM coordinates WHERE id= '" . $locationid . "'";
 
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
 
-        if (mysqli_num_rows($result) != 0) {
-            $dbcoordinateid = $row['TagID'];
-            if($dbmacAddress == $macAddress && )
-            {
-                $exists = true;
-            }  
-            else $exists = false;
-            } 
-            else $exists = false;
+        $return_arr = array();
 
-        return $exists;
+        if (mysqli_num_rows($result) != 0) {
+            $dbcoordinateid = $row['id'];
+            if($dbcoordinateid == $locationid)
+                {
+                array_push($return_arr, array(
+                            'Id'=>$row['id'],
+                            'Location'=>$row['Location'],
+                            'Latitude'=>$row['Latitude'],
+                            'Longitude'=>$row['Longitude']
+                        ));
+                }  
+                else return false;
+                } 
+            else return false;
+
+        return json_encode($return_arr);
     }
 
-    function getData($table, $json, $antennaid){
+    function getData($table, $json, $locationid){
 
-        $json = $this->prepareData($json);
-        $antennaid = $this->prepareData($antennaid);
+        //$jsonString = $this->prepareData($json);
+        $jsonString = '{"type": "iBeacon","uuid":"10000000-0000-0000-0000-000000000000","major":2,"minor":0,"rssi":-91,"macAddress": "0c:f3:ee:16:91:8f"}';
+        $locationid = $this->prepareData($locationid);
+        $id;
+        $location;
+        $latitude;
+        $longitude;
 
-         $result = json_decode($json, true);
-            foreach ($result['Data'] as $element) {
-                    $macaddress = $element['macAddress'];
-                    echo $macaddress;
+        /*GET LOCATION DATA*/
+        $getlocation = $this->getLocation($locationid);
+
+        /*IF LOCATION EXISTS ASSIGN DATA VALUES TO VARIABLES*/
+        if($getlocation != 0){
+            $result = json_decode($getlocation, true);
+            foreach($result as $data){
+                $id = $data['Id'];
+                $location = $data['Location'];
+                $latitude = $data['Latitude'];
+                $longitude = $data['Longitude'];
             }
+        }   else echo 'Location does not exist';
 
+        /*GET MACADDRESS FROM JSON STRING*/
+        $data = json_decode($jsonString);
+        $macAddress = $data->{'macAddress'};
 
-        $this->sql = "INSERT INTO tags (Tag, vehicle_id) VALUES ('SUVGCLASSTAG02', '5')";
+        if($this->ifExists($macAddress) == TRUE){
+            echo 'Mac Already exists';
+        }
+        else
+        $this->sql = "INSERT INTO " . $table . " (Location, TagID, Latitude, Longitude) VALUES ('" . $location . "','" . $macAddress . "','" . $latitude . "','" . $longitude . "')";
 
         if (mysqli_query($this->connect, $this->sql) === true) { 
             echo 'Registration Sucessful';
             return true;
-        } else echo 'An error ocurr while registering the tag';   
+        } else echo 'An error ocurr while registering the location';   
         
-        }
+    }
 
     function test($data){
         $data = $this->prepareData($data);
