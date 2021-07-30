@@ -60,7 +60,7 @@ class DataBase
 
         $email = $this->prepareData($email);
 
-        $userid = $this->getUserId('users', $email);
+        $userid = $this->getUserId('app_users', $email);
 
 
         /*To select vehicle id based on user_id*/

@@ -266,13 +266,15 @@ class DataBase
 
     function getData($table, $json, $locationid){
 
-        //$jsonString = $this->prepareData($json);
-        $jsonString = '{"type": "iBeacon","uuid":"10000000-0000-0000-0000-000000000000","major":2,"minor":0,"rssi":-91,"macAddress": "0c:f3:ee:16:91:8f"}';
+        $jsonString = $this->prepareData($json);
+        //$jsonString = '{"type": "iBeacon","uuid":"10000000-0000-0000-0000-000000000000","major":2,"minor":0,"rssi":-91,"macAddress": "0c:f3:ee:16:91:8f"}';
         $locationid = $this->prepareData($locationid);
         $id;
         $location;
         $latitude;
         $longitude;
+
+        $encoded_data = str_replace("'", '"', $jsonString);
 
         /*GET LOCATION DATA*/
         $getlocation = $this->getLocation($locationid);
@@ -288,8 +290,8 @@ class DataBase
             }
         }   else echo 'Location does not exist';
 
-        /*GET MACADDRESS FROM JSON STRING*/
-        $data = json_decode($jsonString);
+        /*GET MACADDRESS FROM JSON STRING*/        
+        $data = json_decode($encoded_data);
         $macAddress = $data->{'macAddress'};
 
         if($this->ifExists($macAddress) == TRUE){
@@ -307,6 +309,17 @@ class DataBase
 
     function test($data){
         $data = $this->prepareData($data);
+        $locationid = '1';
+        $table = 'test';
+
+        $encoded_data = str_replace("'", '"', $data);
+
+        $this->sql = "INSERT INTO " . $table . " (data, location_id) VALUES ('" . $encoded_data . "','" . $locationid . "')";
+
+         if (mysqli_query($this->connect, $this->sql) === true) { 
+            echo 'Registration Sucessful';
+            return true;
+        } else echo 'An error ocurr while registering the location';
 
         echo($data);
     }

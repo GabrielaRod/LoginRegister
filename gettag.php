@@ -1,5 +1,5 @@
 <?php
-require "testing.php";
+require "DataBase.php";
 $db = new DataBase();
 $Email = $_POST['Email'];
 

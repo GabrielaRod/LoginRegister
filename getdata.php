@@ -1,12 +1,12 @@
 <?php
 require "test.php";
 $db = new DataBase();
-$Json = $_GET['Json'];
-$AntennaId = $_GET['AntennaId'];
+$Json = $_POST['Json'];
+$AntennaId = $_POST['AntennaId'];
 
 if (isset($Json) && isset($AntennaId)) {
     if ($db->dbConnect()) {
-        if ($db->getData('locations', $_GET['Json'], $_GET['AntennaId'])) {
+        if ($db->getData('locations', $_POST['Json'], $_POST['AntennaId'])) {
             echo "Data Inserted";
         } else echo "ERROR";
     } else echo "Error: Database connection";

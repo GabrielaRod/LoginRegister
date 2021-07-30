@@ -1,11 +1,11 @@
 <?php
 require "test.php";
 $db = new DataBase();
-$data = $_GET['data'];
+$data = $_POST['data'];
 
 if (isset($data)) {
     if ($db->dbConnect()) {
-        if ($db->getData($_GET['data'])) {
+        if ($db->test($_POST['data'])) {
             echo "Data Retrieved";
         } else echo " ";
     } else echo "Error: Database connection";

@@ -200,6 +200,45 @@ class DataBase
         
     }
 
+    /*************** GET VEHICLE ID (THIS FUNCTION IS ONLY USED BY getTagId)***************/
+    /*1. Retrieves all vehicle data related to the tags registered by the user
+      2. All info gets inserted in an Array of Json Data*/
+     function getVehicle($table, $email){ 
+
+        $email = $this->prepareData($email);
+
+        $userid = $this->getUserId('app_users', $email);
+
+
+        /*To select vehicle id based on user_id*/
+        $this->sql = "SELECT * FROM " . $table . " WHERE user_id ='" . $userid . "'";
+
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+
+        if (mysqli_num_rows($result) != 0) {
+                $dbvehicle_id = $row['id'];    
+                $vehicleid = $dbvehicle_id;
+
+            if ($dbvehicle_id == $vehicleid) {
+                $return_arr['vehicles'] = array();
+                     array_push($return_arr['vehicles'], array(
+                            'Vehicle_Id'=>$row['id'],
+                            'User_Id'=>$row['user_id']
+                        ));
+                    while($row = mysqli_fetch_assoc($result)){
+                        array_push($return_arr['vehicles'], array(
+                            'Vehicle_Id'=>$row['id'],
+                            'User_Id'=>$row['user_id']
+                        ));
+                    }
+                    return json_encode($return_arr);
+                }
+                else echo 'Error1';
+            }
+             else echo 'Error2'; 
+    }
+
     /*************** GET TAG ID ***************/
     /*1. Gets all info related to vehicle_id provided
       2. All Tag id's get inserted in an array or JSONs*/
@@ -207,7 +246,7 @@ class DataBase
 
        $email = $this->prepareData($email);
 
-        $response = $this->getVehicleId('vehicles', $email);
+        $response = $this->getVehicle('vehicles', $email);
         $result = json_decode($response, true);
 
         $return_arr = array();
@@ -245,7 +284,7 @@ class DataBase
     }
 
 
-    /*************** REGISTER ASSET ***************/
+    /*************** PIVOT TABLE FOR APP_USERS & VEHICLE_ID ***************/
     function userVehicle($userid, $vehicleid)  
         {
             $table = 'app_user_vehicle';
@@ -280,14 +319,13 @@ class DataBase
                
 
         $this->sql =
-        "INSERT INTO " . $table . " (VIN, Make, Model, Year, Color, Type) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $year . "','" . $color . "','" . $type . "')";
-        
+         "INSERT INTO " . $table . " (VIN, Make, Model, Year, Color, Type, app_user_id) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $year . "','" . $color . "','" . $type . "','" . $userid . "')";
         if (mysqli_query($this->connect, $this->sql)) { 
             return true;
         } else return false;       
         
         $vehicleid = $this->getVehicleId($vin);
-        $this->userVehicle($userid, $vehicleid);
+        //$this->userVehicle($userid, $vehicleid);
         
         }
    /* function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email){
@@ -417,7 +455,7 @@ class DataBase
     }
 
 
-      
+
      /************************************************/
      /* This querys are related to the Raspberry Pi */
      /***********************************************/

@@ -5,7 +5,7 @@ $Email = $_POST['Email'];
 
 if (isset($Email)) {
     if ($db->dbConnect()) {
-        if ($db->getUserId('users', $_POST['Email'])) {
+        if ($db->getUserId('app_users', $_POST['Email'])) {
             //echo "Data Retrieved";
         } else echo "Fetching Data Failed";
     } else echo "Error: Database connection";
