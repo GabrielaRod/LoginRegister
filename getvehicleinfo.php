@@ -7,7 +7,7 @@ if (isset($VehicleId)) {
     if ($db->dbConnect()) {
         if ($db->getVehicleInfo('vehicles', $_POST['VehicleId'])) {
             echo "Data Retrieved";
-        } else echo "";
+        } else echo "Error Retrieving Data";
     } else echo "Error: Database connection";
 } else echo "All fields are required!";
 ?>

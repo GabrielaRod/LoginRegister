@@ -194,9 +194,9 @@ class DataBase
 
          $this->sql = "INSERT INTO tags (Tag, vehicle_id) VALUES ('" . $tagid . "','" . $vehicleid . "')";
             if (mysqli_query($this->connect, $this->sql)) {
-                        return true;
-            } 
-            else return false;
+                echo 'Registration Successful';
+                return true;
+            } else return false; 
         
     }
 
@@ -211,7 +211,7 @@ class DataBase
 
 
         /*To select vehicle id based on user_id*/
-        $this->sql = "SELECT * FROM " . $table . " WHERE user_id ='" . $userid . "'";
+        $this->sql = "SELECT * FROM " . $table . " WHERE app_user_id ='" . $userid . "'";
 
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
@@ -224,12 +224,12 @@ class DataBase
                 $return_arr['vehicles'] = array();
                      array_push($return_arr['vehicles'], array(
                             'Vehicle_Id'=>$row['id'],
-                            'User_Id'=>$row['user_id']
+                            'User_Id'=>$row['app_user_id']
                         ));
                     while($row = mysqli_fetch_assoc($result)){
                         array_push($return_arr['vehicles'], array(
                             'Vehicle_Id'=>$row['id'],
-                            'User_Id'=>$row['user_id']
+                            'User_Id'=>$row['app_user_id']
                         ));
                     }
                     return json_encode($return_arr);
@@ -299,9 +299,7 @@ class DataBase
 
         }
 
-        /*TODO*/
-        //TABLE Vehicles no longer has a column "user_id", I have created a pivot table with this relationship called "app_user_vehicle"
-        //where we have the app_user_id and the vehicle_id
+    /*************** ASSET REGISTRATION ***************/
     function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email)  
         {
 
@@ -328,6 +326,7 @@ class DataBase
         //$this->userVehicle($userid, $vehicleid);
         
         }
+
    /* function assetRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email){
 
         $vin = $this->prepareData($vin);
@@ -386,7 +385,7 @@ class DataBase
         $status = $this->prepareData($status);
         $email = $this->prepareData($email);
 
-        $response = $this->getUserInfo('users', $email);
+        $response = $this->getUserInfo('app_users', $email);
 
         $result = json_decode($response, true);
             foreach($result['user'] as $data){
@@ -446,6 +445,22 @@ class DataBase
     function disableAlert($table, $email, $vin){
         $email = $this->prepareData($email);
         $vin = $this->prepareData($vin);
+
+        $this->sql = "UPDATE " . $table . " SET `Status` = 'INACTIVE' WHERE `Status` = 'ACTIVE' AND `Email` = '" . $email . "'" . " AND `VIN` = '" . $vin . "'";
+        if (mysqli_query($this->connect, $this->sql)) { 
+            return true;
+        } else return false;     
+            
+    }
+
+
+
+    /*************** SHOW MARKERS ON MAP ***************/
+    function viewMap($table, $email){
+        $table = $this->prepareData($table);  //Table reports
+        $email = $this->prepareData($email);
+        
+        
 
         $this->sql = "UPDATE " . $table . " SET `Status` = 'INACTIVE' WHERE `Status` = 'ACTIVE' AND `Email` = '" . $email . "'" . " AND `VIN` = '" . $vin . "'";
         if (mysqli_query($this->connect, $this->sql)) { 
