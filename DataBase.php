@@ -454,18 +454,103 @@ class DataBase
     }
 
 
+    /*************** GET VIN  ***************/
+    function getVIN($table, $email){
+        $table = $this->prepareData($table); // Table 'reports'
+        $email = $this->prepareData($email);
+        $VIN;
+
+
+        /*To select vehicle VIN based on Email and Status*/
+        $this->sql = " SELECT * FROM  " . $table . " WHERE `Status` = 'ACTIVE' AND `Email` = '" . $email . "'";
+        
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+        if (mysqli_num_rows($result) != 0) {
+            $dbemail = $row['Email'];
+            $dbVIN = $row['VIN'];
+            if ($dbemail == $email) {
+                $VIN = $dbVIN;
+                return $VIN;                    
+            } 
+            else return false;
+        } 
+        else return false;
+   
+            
+    }
+
+      /*************** GET TAG ID  ***************/
+    function getTag($table, $vehicleid){
+        $table = $this->prepareData($table); // Table 'tags'
+        $vehicleid = $this->prepareData($vehicleid);
+        $Tag;
+
+
+        /*To select vehicle VIN based on Email and Status*/
+        $this->sql = " SELECT * FROM  " . $table . " WHERE vehicle_id = '" . $vehicleid . "'";
+        
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+        if (mysqli_num_rows($result) != 0) {
+            $dbvehicle_id = $row['vehicle_id'];
+            $dbTag = $row['Tag'];
+            if ($dbvehicle_id == $vehicleid) {
+                $Tag = $dbTag;
+                return $Tag;                    
+            } 
+            else return false;
+        } 
+        else return false;
+   
+            
+    }
 
     /*************** SHOW MARKERS ON MAP ***************/
     function viewMap($table, $email){
-        $table = $this->prepareData($table);  //Table reports
+        $table = $this->prepareData($table);  //Table locations
         $email = $this->prepareData($email);
-        
-        
 
-        $this->sql = "UPDATE " . $table . " SET `Status` = 'INACTIVE' WHERE `Status` = 'ACTIVE' AND `Email` = '" . $email . "'" . " AND `VIN` = '" . $vin . "'";
-        if (mysqli_query($this->connect, $this->sql)) { 
-            return true;
-        } else return false;     
+        $VIN = $this->getVIN('reports',$email);
+
+
+        $response = $this->getVehicleId($VIN);
+        $result = json_decode($response, true);
+            foreach ($result['vehicles'] as $element) {
+                    $vehicleid = $element['Vehicle_Id'];
+            }
+
+        $TagId = $this->getTag('tags', $vehicleid);
+
+        /*To select Latitude and Longitud associated to the TagId provided*/
+        $this->sql = " SELECT * FROM  " . $table . " WHERE TagID = '" . $TagId . "'";
+
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+
+        $return_arr = array();
+
+        if (mysqli_num_rows($result) != 0) {
+            $dbTagID = $row['TagID'];
+
+            if ($dbTagID == $TagId) {                
+                array_push($return_arr, array(
+                            'Latitude'=>$row['Latitude'],
+                            'Longitude'=>$row['Longitude']
+                        ));
+                       while($row = mysqli_fetch_assoc($result)){
+                            array_push($return_arr, array(
+                           'Latitude'=>$row['Latitude'],
+                            'Longitude'=>$row['Longitude']
+                        ));
+                        }
+                        echo json_encode($return_arr);   
+                        return true;
+                    }         
+                
+                else return false;
+            } 
+            else return false;   
             
     }
 
