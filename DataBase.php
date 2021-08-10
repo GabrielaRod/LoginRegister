@@ -540,7 +540,7 @@ class DataBase
                         ));
                        while($row = mysqli_fetch_assoc($result)){
                             array_push($return_arr, array(
-                           'Latitude'=>$row['Latitude'],
+                            'Latitude'=>$row['Latitude'],
                             'Longitude'=>$row['Longitude']
                         ));
                         }
