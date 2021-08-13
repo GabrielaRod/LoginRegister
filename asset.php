@@ -14,7 +14,7 @@ if (isset($VIN) && isset($Make) && isset($Model) && isset($Year) && isset($Color
     if ($db->dbConnect()) {
         if ($db->tagRegistration("vehicles", $_POST['VIN'], $_POST['Make'], $_POST['Model'], $_POST['Year'], $_POST['Color'], $_POST['Type'], $_POST['Tag'], $_POST['Email'])) {
             echo "Registration Successful";
-        } else echo "Registration Failed";
+        } else echo "";
     } else echo "Error: Database connection";
 } else echo "All fields are required!";
 ?>
