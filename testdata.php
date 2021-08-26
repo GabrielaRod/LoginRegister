@@ -1,11 +1,12 @@
 <?php
 require "test.php";
 $db = new DataBase();
-$data = $_POST['data'];
+$Data = $_POST['Data'];
+$AntennaId = $_POST['AntennaId'];
 
-if (isset($data)) {
+if (isset($Data)&& isset($AntennaId)) {
     if ($db->dbConnect()) {
-        if ($db->test($_POST['data'])) {
+        if ($db->livefeed($_POST['Data'], $_POST['AntennaId'])) {
             echo "Data Retrieved";
         } else echo " ";
     } else echo "Error: Database connection";

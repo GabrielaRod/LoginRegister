@@ -613,8 +613,8 @@ class DataBase
 
     function getData($table, $json, $locationid){
 
-        //$jsonString = $this->prepareData($json);
-        $jsonString = '{"type": "iBeacon","uuid":"10000000-0000-0000-0000-000000000000","major":2,"minor":0,"rssi":-91,"macAddress": "0c:f3:ee:16:91:8f"}';
+        $jsonString = $this->prepareData($json);
+        //$jsonString = '{"type": "iBeacon","uuid":"10000000-0000-0000-0000-000000000000","major":2,"minor":0,"rssi":-91,"macAddress": "0c:f3:ee:16:91:8f"}';
         $locationid = $this->prepareData($locationid);
         $id;
         $location;
@@ -638,6 +638,7 @@ class DataBase
         /*GET MACADDRESS FROM JSON STRING*/
         $data = json_decode($jsonString);
         $macAddress = $data->{'macAddress'};
+
 
         if($this->ifExists($macAddress) == TRUE){
             echo 'Mac Already exists';

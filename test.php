@@ -276,8 +276,14 @@ class DataBase
 
         $encoded_data = str_replace("'", '"', $jsonString);
 
+        /*GET MACADDRESS FROM JSON STRING*/        
+        //$data = json_encode($encoded_data);
+        //$macAddress = $data->{"macAddress"};
+        $macAddress = substr($encoded_data, 126, -3);
+
         /*GET LOCATION DATA*/
         $getlocation = $this->getLocation($locationid);
+
 
         /*IF LOCATION EXISTS ASSIGN DATA VALUES TO VARIABLES*/
         if($getlocation != 0){
@@ -288,26 +294,24 @@ class DataBase
                 $latitude = $data['Latitude'];
                 $longitude = $data['Longitude'];
             }
-        }   else echo 'Location does not exist';
+        }   else echo '<br>Location does not exist';
 
-        /*GET MACADDRESS FROM JSON STRING*/        
-        $data = json_decode($encoded_data);
-        $macAddress = $data->{'macAddress'};
+        
 
-        if($this->ifExists($macAddress) == TRUE){
-            echo 'Mac Already exists';
+        if($this->ifExists($macAddress) === true){
+            echo '<br>Mac Already exists';
         }
         else
         $this->sql = "INSERT INTO " . $table . " (Location, TagID, Latitude, Longitude) VALUES ('" . $location . "','" . $macAddress . "','" . $latitude . "','" . $longitude . "')";
 
         if (mysqli_query($this->connect, $this->sql) === true) { 
-            echo 'Registration Sucessful';
+            echo '<br>Registration Sucessful';
             return true;
-        } else echo 'An error ocurr while registering the location';   
+        } else echo '<br>An error ocurr while registering the location';   
         
     }
 
-    function test($data){
+/*    function test($data){
         $data = $this->prepareData($data);
         $locationid = '1';
         $table = 'test';
@@ -322,6 +326,112 @@ class DataBase
         } else echo 'An error ocurr while registering the location';
 
         echo($data);
+    }*/
+
+    /*************** GET VEHICLE VIN BASED ON TAG ID ***************/
+    function getVehicleInfo($tagid){
+
+        $tagid = $this->prepareData($tagid);
+        $table = 'tags';
+        $vehicle_id;
+
+        $this->sql = "select * from " . $table . " where Tag = '" . $tagid . "'";
+        
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+
+        if (mysqli_num_rows($result) != 0) {
+            $dbtag = $row['Tag'];
+            $dbvehicleid = $row['vehicle_id'];
+            if ($dbtag == $tagid) {
+               $vehicle_id = $dbvehicleid;
+                return $vehicle_id; 
+            }                                                      
+                else return false;
+        } 
+        else return false;
+    }
+
+
+    /*************** GET VEHICLE VIN (CREATE REPORT ENTRY) ***************/
+    function getVehicleVIN($vehicleid){
+
+        $vehicleid = $this->prepareData($vehicleid);
+        $table = 'vehicles';
+        $vin;
+
+        $this->sql = "select * from " . $table . " where id = '" . $vehicleid . "'";
+        
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+
+        if (mysqli_num_rows($result) != 0) {
+            $dbid = $row['id'];
+            $dbvin = $row['VIN'];
+            if ($dbid == $vehicleid) {
+               $vin = $dbvin;
+                return $vin; 
+            }                                                      
+                else return false;
+        } 
+        else return false;
+    }
+
+     /*************** LOOK FOR VIN IN REPORTS TABLE ***************/
+    function VINExists($vin){
+
+        $vin = $this->prepareData($vin);
+        $table = 'reports';
+
+        $this->sql = "select * from " . $table . " where VIN = '" . $vin . "'";
+        
+        $result = mysqli_query($this->connect, $this->sql);
+        $row = mysqli_fetch_assoc($result);
+
+        if (mysqli_num_rows($result) != 0) {
+            $dbvin = $row['VIN'];
+
+            if ($dbvin == $vin) {
+                return true;    
+            }                         
+                else return false;
+        } 
+        else return false;
+    }
+
+
+    /*************** VALIDATE ENTRY TO CHECK IF TAG ID HAS BEEN REPORTED ***************/
+    function validations($macAddress, $data, $locationid){
+
+        $macAddress = $this->prepareData($macAddress);
+
+        $vehicleid = $this->getVehicleInfo($macAddress);
+        $vin = $this->getVehicleVIN($vehicleid);
+
+        if($this->VINExists($vin) === true){
+            $this->getData('locations', $data, $locationid);
+        }
+        else echo 'An error ocurr while registering the location';
+    }
+
+    function livefeed($data, $locationid){
+        $data = $this->prepareData($data);
+        $locationid = $this->prepareData($locationid);
+        $table = 'livefeed';
+
+        $encoded_data = str_replace("'", '"', $data);
+
+        $macAddress = substr($encoded_data, 126, -3);        
+
+        $this->sql = "INSERT INTO " . $table . " (Data, location_id) VALUES ('" . $encoded_data . "','" . $locationid . "')";
+
+         if (mysqli_query($this->connect, $this->sql) === true) { 
+            $this->validations($macAddress, $data, $locationid);   
+            return true;
+        } else echo 'An error ocurr while registering the data';
+
+
+
     }
 
 
