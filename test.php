@@ -264,6 +264,21 @@ class DataBase
         return json_encode($return_arr);
     }
 
+    function livefeed($data, $locationid){
+        $json = $this->prepareData($data);
+        $locationid = $this->prepareData($locationid);
+        $table = 'livefeed';   
+
+        $this->sql = "INSERT INTO " . $table . " (Data, location_id) VALUES ('" . $json . "','" . $locationid . "')";
+
+        if (mysqli_query($this->connect, $this->sql) === true) {            
+            return true;
+        } else echo 'An error ocurr while registering the data';
+
+
+
+    }
+
     function getData($table, $json, $locationid){
 
         $jsonString = $this->prepareData($json);
@@ -273,6 +288,8 @@ class DataBase
         $location;
         $latitude;
         $longitude;
+
+        $this->livefeed($jsonString, $locationid);
 
         $encoded_data = str_replace("'", '"', $jsonString);
 
@@ -412,26 +429,6 @@ class DataBase
             $this->getData('locations', $data, $locationid);
         }
         else echo 'An error ocurr while registering the location';
-    }
-
-    function livefeed($data, $locationid){
-        $data = $this->prepareData($data);
-        $locationid = $this->prepareData($locationid);
-        $table = 'livefeed';
-
-        $encoded_data = str_replace("'", '"', $data);
-
-        $macAddress = substr($encoded_data, 126, -3);        
-
-        $this->sql = "INSERT INTO " . $table . " (Data, location_id) VALUES ('" . $encoded_data . "','" . $locationid . "')";
-
-         if (mysqli_query($this->connect, $this->sql) === true) { 
-            $this->validations($macAddress, $data, $locationid);   
-            return true;
-        } else echo 'An error ocurr while registering the data';
-
-
-
     }
 
 

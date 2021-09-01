@@ -323,7 +323,7 @@ class DataBase
         } else return false;       
         
         $vehicleid = $this->getVehicleId($vin);
-        //$this->userVehicle($userid, $vehicleid);
+        $this->userVehicle($userid, $vehicleid);
         
         }
 
