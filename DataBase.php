@@ -137,14 +137,15 @@ class DataBase
             if ($dbid == $vehicleid) {
                 $return_arr = array();
                 array_push($return_arr, array(
+                            'LicensePlate'=>$row['LicensePlate'],
                             'VIN'=>$row['VIN'],
                             'Make'=>$row['Make'],
                             'Model'=>$row['Model'],
                             'Color'=>$row['Color']
                         ));
-                        echo json_encode($return_arr);  
-                    }
-                                      
+                        echo json_encode($return_arr); 
+                        return true; 
+                    }                                     
                 
                 else return false;
             } 
@@ -224,11 +225,13 @@ class DataBase
                 $return_arr['vehicles'] = array();
                      array_push($return_arr['vehicles'], array(
                             'Vehicle_Id'=>$row['id'],
+                            'LicensePlate'=>$row['LicensePlate'],
                             'User_Id'=>$row['app_user_id']
                         ));
                     while($row = mysqli_fetch_assoc($result)){
                         array_push($return_arr['vehicles'], array(
                             'Vehicle_Id'=>$row['id'],
+                            'LicensePlate'=>$row['LicensePlate'],
                             'User_Id'=>$row['app_user_id']
                         ));
                     }
@@ -253,8 +256,10 @@ class DataBase
 
             foreach ($result['vehicles'] as $element) {
                     $vehicleid = $element['Vehicle_Id']; 
+                    $licenseplate = $element['LicensePlate'];
 
-                    /*To select vehicle id based on user_id*/
+
+                    /*To select vehicle id's related to the app_user_id*/
                     $this->sql = "SELECT * FROM " . $table . " WHERE vehicle_id ='" . $vehicleid . "'";
 
                     $result2 = mysqli_query($this->connect, $this->sql);
@@ -266,11 +271,13 @@ class DataBase
                     if ($dbvehicle_id == $vehicleid) {
                         array_push($return_arr, array(
                             'Tag'=>$row['Tag'],
+                            'LicensePlate'=>$licenseplate,
                             'Vehicle_Id'=>$row['vehicle_id']
                             ));
                     while($row = mysqli_fetch_assoc($result2)){
                         array_push($return_arr, array(
                             'Tag'=>$row['Tag'],
+                            'LicensePlate'=>$licenseplate,
                             'Vehicle_Id'=>$row['vehicle_id']
                             ));
                         }
@@ -352,8 +359,9 @@ class DataBase
     }*/
 
     /*************** REGISTER TAG ***************/
-    function tagRegistration($table, $vin, $make, $model, $year, $color, $type, $tagid, $email){
+    function tagRegistration($table, $licenseplate, $vin, $make, $model, $year, $color, $type, $tagid, $email){
 
+        $licenseplate = $this->prepareData($licenseplate);
         $vin = $this->prepareData($vin);
         $make = $this->prepareData($make);
         $model = $this->prepareData($model);
@@ -363,7 +371,7 @@ class DataBase
         $tagid = $this->prepareData($tagid);
         $email = $this->prepareData($email);
 
-        $this->assetRegistration('vehicles', $vin, $make, $model, $year, $color, $type, $tagid, $email);
+        $this->assetRegistration('vehicles', $licenseplate, $vin, $make, $model, $year, $color, $type, $tagid, $email);
 
         $response = $this->getVehicleId($vin);
         $result = json_decode($response, true);
@@ -376,9 +384,10 @@ class DataBase
     }
 
     /*************** CREATE ALERT ***************/
-    function createAlert($table, $vin, $make, $model, $color, $status, $email){
+    function createAlert($table, $vin, $licenseplate, $make, $model, $color, $status, $email){
 
         $vin = $this->prepareData($vin);
+        $licenseplate = $this->prepareData($licenseplate);
         $make = $this->prepareData($make);
         $model = $this->prepareData($model);
         $color = $this->prepareData($color);
@@ -394,7 +403,7 @@ class DataBase
             }
 
         $this->sql =
-            "INSERT INTO " . $table . " (VIN, Make, Model, Color, FirstName, LastName, Email, Status) VALUES ('" . $vin . "','" . $make . "','" . $model . "','" . $color . "','" . $firstname . "','" . $lastname . "','" . $email . "','". $status . "')";
+            "INSERT INTO " . $table . " (VIN, LicensePlate, Make, Model, Color, FirstName, LastName, Email, Status) VALUES ('" . $vin . "','" . $licenseplate . "','" . $make . "','" . $model . "','" . $color . "','" . $firstname . "','" . $lastname . "','" . $email . "','". $status . "')";
         if (mysqli_query($this->connect, $this->sql)) { 
             return true;
         } else return false;     

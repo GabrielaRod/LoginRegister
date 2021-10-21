@@ -264,12 +264,12 @@ class DataBase
         return json_encode($return_arr);
     }
 
-    function livefeed($data, $locationid){
+    function livefeed($table, $data, $locationid){
         $json = $this->prepareData($data);
         $locationid = $this->prepareData($locationid);
-        $table = 'livefeed';   
+        $table = $this->prepareData($table);;   
 
-        $this->sql = "INSERT INTO " . $table . " (Data, location_id) VALUES ('" . $json . "','" . $locationid . "')";
+        $this->sql = "INSERT INTO " . $table . " (data, location_id) VALUES ('" . $json . "','" . $locationid . "')";
 
         if (mysqli_query($this->connect, $this->sql) === true) {            
             return true;
