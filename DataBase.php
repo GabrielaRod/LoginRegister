@@ -35,10 +35,23 @@ class DataBase
     }
 
     /*************** LOGIN USER ***************/
-    function logIn($table, $email, $password)
+    function tokenUpdate($table, $token, $email) /*To update FCM Token for the Notifications*/
+    {
+        $token = $this->prepareData($token);
+
+        $this->sql = "UPDATE " . $table . " SET Token= '" . $token . "'" . " WHERE Email= '" . $email . "'";
+        
+        if (mysqli_query($this->connect, $this->sql)) {
+            return true;
+        } else return false;
+    }
+
+    function logIn($table, $email, $password, $token)
     {
         $email = $this->prepareData($email);
         $password = $this->prepareData($password);
+        $token = $this->prepareData($token);
+
         $this->sql = "select * from " . $table . " where Email = '" . $email . "'";
         $result = mysqli_query($this->connect, $this->sql);
         $row = mysqli_fetch_assoc($result);
@@ -46,6 +59,7 @@ class DataBase
             $dbemail = $row['Email'];
             $dbpassword = $row['Password'];
             if ($dbemail == $email && password_verify($password, $dbpassword)) {
+                $this->tokenUpdate($table, $token, $email);
                 $login = true;
             } else $login = false;
         } else $login = false;
@@ -54,7 +68,7 @@ class DataBase
     }
 
     /*************** SIGN UP USER ***************/
-    function signUp($table, $firstname, $lastname, $domid, $address, $city, $phonenumber, $email, $password)
+    function signUp($table, $firstname, $lastname, $domid, $address, $city, $phonenumber, $email, $password, $token)
     {
         $firstname = $this->prepareData($firstname);
         $lastname = $this->prepareData($lastname);
@@ -64,9 +78,10 @@ class DataBase
         $phonenumber = $this->prepareData($phonenumber);
         $email = $this->prepareData($email);
         $password = password_hash($password, PASSWORD_DEFAULT);
+        $token = $this->prepareData($token);
 
         $this->sql =
-            "INSERT INTO " . $table . " (FirstName, LastName, DomID, Address, City, PhoneNumber, Email, Password) VALUES ('" . $firstname . "','" . $lastname . "','" . $domid . "','" . $address . "','" . $city . "','" . $phonenumber . "','" . $email . "','" . $password . "')";
+            "INSERT INTO " . $table . " (FirstName, LastName, DomID, Address, City, PhoneNumber, Email, Password, Token) VALUES ('" . $firstname . "','" . $lastname . "','" . $domid . "','" . $address . "','" . $city . "','" . $phonenumber . "','" . $email . "','" . $password . "','" . $token . "')";
         if (mysqli_query($this->connect, $this->sql)) {
             return true;
         } else return false;
